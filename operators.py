@@ -82,7 +82,8 @@ class DisableInViewport(bpy.types.Operator):
             else:
                 for id in ids:
                     id.hide_viewport = False
-                    id.select_set(True)
+                    if id.bl_rna.identifier == 'Object':
+                        id.select_set(True)
 
         return {"FINISHED"}
 
