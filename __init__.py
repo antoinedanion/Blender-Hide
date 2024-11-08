@@ -7,7 +7,7 @@ bl_info = {
     "version": (1, 0, 0),
     "blender": (4, 2, 1),
     "location": "",
-    "warning": "Alpha", # used for warning icon and text in addons panel
+    "warning": "", # used for warning icon and text in addons panel
     "doc_url": "",
     "tracker_url": "",
     "support": "COMMUNITY",
