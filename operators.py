@@ -63,7 +63,7 @@ class DisableInViewport(bpy.types.Operator):
     bl_idname = "hide.disableinviewport"
     bl_label = "Hide - Disable in viewport"
     bl_description = "Disable in viewport"
-    bl_options = {"REGISTER"}
+    bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
     def poll(cls, context):
