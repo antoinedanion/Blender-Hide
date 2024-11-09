@@ -70,7 +70,7 @@ class DisableInViewport(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        print('\nHide - DisableInViewport - execute')
+        print('Hide - DisableInViewport - execute')
 
         sel = get_sel()
         ids: list[Object, Collection] = get_sel_collections(sel) + get_sel_objects(sel)
