@@ -59,10 +59,10 @@ def get_sel_global_state(sel: dict[str, ID]) -> bool | None:
 
     return global_state
 
-class DisableInViewport(bpy.types.Operator):
-    bl_idname = "hide.disableinviewport"
-    bl_label = "Hide - Disable in viewport"
-    bl_description = "Disable in viewport"
+class ToggleViewportDisplay(bpy.types.Operator):
+    bl_idname = "hide.toggleviewportdisplay"
+    bl_label = "Hide - Toggle viewport display"
+    bl_description = "Toggle viewport display."
     bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
@@ -88,7 +88,7 @@ class DisableInViewport(bpy.types.Operator):
         return {"FINISHED"}
 
 ops = (
-    DisableInViewport,
+    ToggleViewportDisplay,
 )
 
 def register():
