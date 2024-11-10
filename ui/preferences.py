@@ -48,7 +48,7 @@ def load_preferences_from_file():
     set_scene_prefs(prefs_values)
 
 
-class ExampleAddonPreferences(AddonPreferences):
+class AddonPreferences(AddonPreferences):
     # this must match the add-on name, use '__package__'
     # when defining this in a submodule of a python package.
     bl_idname = ADDON_NAME
