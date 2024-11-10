@@ -42,10 +42,9 @@ def load_preferences_from_file():
     try:
         with open(PREFS_FILEPATH, 'r') as file:
             prefs_values = json.load(file)
+            set_scene_prefs(prefs_values)
     except:
         prefs_values = None
-
-    set_scene_prefs(prefs_values)
 
 
 class HidePreferences(AddonPreferences):
