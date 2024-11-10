@@ -3,6 +3,8 @@ from typing import Any, Iterable
 import bpy
 from bpy.types import ID, Object, Collection, LayerCollection
 
+from .constants import ADDON_NAME
+
 def get_sel() -> dict[str, ID]:
     # Docs used
     # https://blender.stackexchange.com/questions/203729/python-get-selected-objects-in-outliner Check bl_rna.identifier
@@ -213,7 +215,7 @@ class Hide(bpy.types.Operator):
     def execute(self, context):
         print('Hide - Hide - execute')
 
-        addon_prefs = bpy.context.preferences.addons[__name__.split('.')[0]].preferences
+        addon_prefs = bpy.context.preferences.addons[ADDON_NAME].preferences
         hide_method = addon_prefs.hide_method
 
         if hide_method == 'HIDEINVIEWPORT':

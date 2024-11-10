@@ -35,7 +35,11 @@ def register():
     for mod in modules:
         mod.register()
 
+    preferences.load_preferences_from_file()
+
 def unregister():
+    preferences.export_preferences_to_file()
+
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
