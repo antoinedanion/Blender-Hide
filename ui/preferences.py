@@ -48,7 +48,7 @@ def load_preferences_from_file():
     set_scene_prefs(prefs_values)
 
 
-class AddonPreferences(AddonPreferences):
+class HidePreferences(AddonPreferences):
     # this must match the add-on name, use '__package__'
     # when defining this in a submodule of a python package.
     bl_idname = ADDON_NAME
@@ -68,7 +68,7 @@ class AddonPreferences(AddonPreferences):
         layout = self.layout
         layout.prop(self, "hide_method")
 
-classes = (AddonPreferences,
+classes = (HidePreferences,
 )
 
 def register():
