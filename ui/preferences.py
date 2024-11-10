@@ -68,7 +68,7 @@ class AddonPreferences(AddonPreferences):
         layout = self.layout
         layout.prop(self, "hide_method")
 
-classes = (ExampleAddonPreferences,
+classes = (AddonPreferences,
 )
 
 def register():
