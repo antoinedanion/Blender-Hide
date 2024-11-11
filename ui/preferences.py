@@ -9,7 +9,7 @@ from ..constants import (PREFS_FILEPATH,
                          ADDON_NAME
                         )
 
-def get_scene_prefs():
+def get_addon_prefs():
     preferences = bpy.context.preferences.addons[ADDON_NAME].preferences
     prefs_values = {}
     for key in preferences.__annotations__.keys():
@@ -20,14 +20,14 @@ def get_scene_prefs():
             prefs_values[key] = k
     return prefs_values
 
-def set_scene_prefs(prefs_values):
+def set_addon_prefs(prefs_values):
     preferences = bpy.context.preferences.addons[ADDON_NAME].preferences
     for key in preferences.__annotations__.keys():
         value = prefs_values[key]
         setattr(preferences, key, value)
 
 def export_preferences_to_file():
-    prefs_values = get_scene_prefs()
+    prefs_values = get_addon_prefs()
     
     if prefs_values:
         json_data = json.dumps(prefs_values, indent=4)
@@ -42,7 +42,7 @@ def load_preferences_from_file():
     try:
         with open(PREFS_FILEPATH, 'r') as file:
             prefs_values = json.load(file)
-            set_scene_prefs(prefs_values)
+            set_addon_prefs(prefs_values)
     except:
         prefs_values = None
 
