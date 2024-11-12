@@ -8,7 +8,7 @@ bl_info = {
     "name": "Hide",
     "description": "Hide/Unhide using H.",
     "author": "Antoine Danion",
-    "version": (1, 1, 0),
+    "version": (1, 1, 1),
     "blender": (4, 2, 1),
     "location": "",
     "warning": "", # used for warning icon and text in addons panel
