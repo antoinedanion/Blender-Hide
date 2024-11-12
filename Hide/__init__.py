@@ -26,8 +26,6 @@ modules = (
     keymap,
 )
 
-addon_keymaps = []
-
 def register():
     from bpy.utils import register_class
     for cls in classes:

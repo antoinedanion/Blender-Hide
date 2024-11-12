@@ -3,7 +3,9 @@ from typing import Any, Iterable
 import bpy
 from bpy.types import ID, Object, Collection, LayerCollection
 
-from .constants import ADDON_NAME
+from .constants import (ADDON_NAME,
+                        OP_IDNAME_PREFIX,
+                       )
 
 def get_sel() -> dict[str, ID]:
     # Docs used
@@ -113,10 +115,10 @@ def get_sel_global_state_disable_render() -> bool | None:
     return global_state
 
 class HideInViewport(bpy.types.Operator):
-    bl_idname = "hide.hideinviewport"
+    bl_idname = OP_IDNAME_PREFIX + "." + "hideinviewport"
     bl_label = "Hide - Hide in viewport"
     bl_description = "Temporarily hide in viewport."
-    bl_options = {"REGISTER", "UNDO"}
+    bl_options = {"REGISTER", "UNDO", "INTERNAL"}
 
     @classmethod
     def poll(cls, context):
@@ -149,10 +151,10 @@ class HideInViewport(bpy.types.Operator):
         return {"FINISHED"}
 
 class DisableInViewports(bpy.types.Operator):
-    bl_idname = "hide.disableinviewports"
+    bl_idname = OP_IDNAME_PREFIX + "." + "disableinviewports"
     bl_label = "Hide - Disable in viewport"
     bl_description = "Disable in viewport."
-    bl_options = {"REGISTER", "UNDO"}
+    bl_options = {"REGISTER", "UNDO", "INTERNAL"}
 
     @classmethod
     def poll(cls, context):
@@ -176,10 +178,10 @@ class DisableInViewports(bpy.types.Operator):
         return {"FINISHED"}
 
 class DisableInRenders(bpy.types.Operator):
-    bl_idname = "hide.disableinrenders"
+    bl_idname = OP_IDNAME_PREFIX + "." + "disableinrenders"
     bl_label = "Hide - Disable in render"
     bl_description = "Disable in render."
-    bl_options = {"REGISTER", "UNDO"}
+    bl_options = {"REGISTER", "UNDO", "INTERNAL"}
 
     @classmethod
     def poll(cls, context):
@@ -203,10 +205,10 @@ class DisableInRenders(bpy.types.Operator):
         return {"FINISHED"}
 
 class Hide(bpy.types.Operator):
-    bl_idname = "hide.hide"
+    bl_idname = OP_IDNAME_PREFIX + "." + "hide"
     bl_label = "Hide - Hide"
     bl_description = "Hide the selection"
-    bl_options = {"REGISTER", "UNDO"}
+    bl_options = {"REGISTER", "UNDO", "INTERNAL"}
 
     @classmethod
     def poll(cls, context):
