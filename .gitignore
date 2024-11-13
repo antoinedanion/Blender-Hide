@@ -4,3 +4,4 @@ __pycache__/
 .examples/
 .env
 prefs/
+build.bat

@@ -1,3 +1,9 @@
+# "Hide" Blender Add-on which simplifies the hide and unhide process.
+# Copyright (C) 2024  Antoine Danion
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://github.com/antoinedanion/Blender-Hide/blob/main/NOTICE>.
+
 import os, json
 
 import bpy

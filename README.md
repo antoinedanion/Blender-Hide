@@ -52,4 +52,5 @@ See [CHANGELOG](https://github.com/antoinedanion/Blender-Hide/blob/main/CHANGELO
 
 ## License
 
+See [NOTICE](https://github.com/antoinedanion/Blender-Hide/blob/main/NOTICE) file
 See [LICENSE](https://github.com/antoinedanion/Blender-Hide/blob/main/LICENSE) file

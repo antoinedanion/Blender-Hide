@@ -1,22 +1,14 @@
+# "Hide" Blender Add-on which simplifies the hide and unhide process.
+# Copyright (C) 2024  Antoine Danion
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://github.com/antoinedanion/Blender-Hide/blob/main/NOTICE>.
+
 from . import (operators,
                keymap,
               )
 from .ui import (preferences,
               )
-
-bl_info = {
-    "name": "Hide",
-    "description": "Hide/Unhide using H.",
-    "author": "Antoine Danion",
-    "version": (1, 1, 1),
-    "blender": (4, 2, 1),
-    "location": "",
-    "warning": "", # used for warning icon and text in addons panel
-    "doc_url": "",
-    "tracker_url": "https://github.com/antoinedanion/Blender-Hide/issues",
-    "support": "COMMUNITY",
-    "category": "3D View",
-}
 
 classes = ()
 
