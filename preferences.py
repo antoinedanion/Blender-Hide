@@ -15,7 +15,8 @@ from .constants import (PREFS_FILEPATH,
                          PREFS_DIR,
                          ADDON_NAME
                         )
-from .keymap import addon_keymaps
+
+from .keymap import get_user_keymaps
 
 def get_addon_prefs():
     preferences = bpy.context.preferences.addons[ADDON_NAME].preferences
@@ -46,27 +47,19 @@ def export_preferences_to_file():
         with open(PREFS_FILEPATH, 'w') as file:
             file.write(json_data)
 
+        print(f'Preferences successfully saved to "{PREFS_FILEPATH}"')
+
 def load_preferences_from_file():
     try:
         with open(PREFS_FILEPATH, 'r') as file:
             prefs_values = json.load(file)
             set_addon_prefs(prefs_values)
+
+        print(f'Preferences successfully loaded from "{PREFS_FILEPATH}"')
     except:
         prefs_values = None
 
-def get_user_keymaps():
-        wm = bpy.context.window_manager
-        kc = wm.keyconfigs.user
-        user_keymaps: dict[str, list[KeyMapItem]] = {}
-        for addon_km, addon_kmi in addon_keymaps:
-            km: KeyMap = kc.keymaps[addon_km.name]
-            kmi: KeyMapItem = km.keymap_items.find_from_operator(addon_kmi.idname)
-            if kmi:
-                try:
-                    user_keymaps[km.name].append(kmi)
-                except:
-                    user_keymaps[km.name] = [kmi,]
-        return user_keymaps
+        print(f'Failed to loade preferences"')
 
 class HidePreferences(AddonPreferences):
     # this must match the add-on name, use '__package__'
@@ -88,7 +81,7 @@ class HidePreferences(AddonPreferences):
         layout = self.layout
 
         layout.prop(self, "hide_method")
-        
+
         layout.separator()
 
         hotkeys_box = layout.box()
