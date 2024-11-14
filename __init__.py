@@ -22,7 +22,11 @@ def register():
     for cls in classes:
         register_class(cls)
     for mod in modules:
-        mod.register()
+        try:
+            mod.register()
+            print(f'{str(mod)} registered successfully.')
+        except:
+            print(f'Failed to register module : {str(mod)}')
 
     preferences.load_preferences_from_file()
 
@@ -33,7 +37,11 @@ def unregister():
     for cls in reversed(classes):
         unregister_class(cls)
     for mod in reversed(modules):
-        mod.unregister()
+        try:
+            mod.unregister()
+            print(f'{str(mod)} unregistered successfully.')
+        except:
+            print(f'Failed to unregister module : {str(mod)}')
 
 if __name__ == "__main__":
     register()
