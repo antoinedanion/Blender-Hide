@@ -25,7 +25,7 @@ def remove_keymaps():
         bpy.context.window_manager.keyconfigs.addon.keymaps.remove(km)
     addon_keymaps.clear()
 
-def register():    
+def register():
     add_kmi(
         km_name='Object Mode',
         kmi_op_idname='hide.hide',

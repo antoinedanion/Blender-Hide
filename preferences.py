@@ -7,13 +7,15 @@
 import os, json
 
 import bpy
-from bpy.types import AddonPreferences
+from bpy.types import AddonPreferences, KeyMap, KeyMapItem
 from bpy.props import EnumProperty
+import rna_keymap_ui
 
-from ..constants import (PREFS_FILEPATH,
+from .constants import (PREFS_FILEPATH,
                          PREFS_DIR,
                          ADDON_NAME
                         )
+from .keymap import addon_keymaps
 
 def get_addon_prefs():
     preferences = bpy.context.preferences.addons[ADDON_NAME].preferences
@@ -52,6 +54,19 @@ def load_preferences_from_file():
     except:
         prefs_values = None
 
+def get_user_keymaps():
+        wm = bpy.context.window_manager
+        kc = wm.keyconfigs.user
+        user_keymaps: dict[str, list[KeyMapItem]] = {}
+        for addon_km, addon_kmi in addon_keymaps:
+            km: KeyMap = kc.keymaps[addon_km.name]
+            kmi: KeyMapItem = km.keymap_items.find_from_operator(addon_kmi.idname)
+            if kmi:
+                try:
+                    user_keymaps[km.name].append(kmi)
+                except:
+                    user_keymaps[km.name] = [kmi,]
+        return user_keymaps
 
 class HidePreferences(AddonPreferences):
     # this must match the add-on name, use '__package__'
@@ -71,7 +86,26 @@ class HidePreferences(AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
+
         layout.prop(self, "hide_method")
+        
+        layout.separator()
+
+        hotkeys_box = layout.box()
+        hotkeys_col = hotkeys_box.column()
+        hotkeys_col.label(text="Hotkeys:")
+        hotkeys_col.separator()
+        wm = bpy.context.window_manager
+        kc = wm.keyconfigs.user
+        user_keymaps = get_user_keymaps()
+        for km_name in user_keymaps:
+            hotkeys_col.label(text=f"•   {km_name}")
+            km: KeyMap = kc.keymaps[km_name]
+            for kmi in user_keymaps[km_name]:
+                hotkeys_col.context_pointer_set("keymap", km)
+                rna_keymap_ui.draw_kmi([], kc, km, kmi, hotkeys_col, 0)
+            hotkeys_col.separator()
+
 
 classes = (HidePreferences,
 )
