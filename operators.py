@@ -8,6 +8,7 @@ from typing import Any, Iterable
 
 import bpy
 from bpy.types import ID, Object, Collection, LayerCollection
+from bpy.props import BoolProperty
 
 from .constants import (ADDON_NAME,
                         OP_IDNAME_PREFIX,
@@ -126,6 +127,11 @@ class HideInViewport(bpy.types.Operator):
     bl_description = "Temporarily hide in viewport."
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
 
+    internal : BoolProperty(
+        name = 'internal',
+        default = False
+    )
+
     @classmethod
     def poll(cls, context):
         return True
@@ -162,6 +168,11 @@ class DisableInViewports(bpy.types.Operator):
     bl_description = "Disable in viewport."
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
 
+    internal : BoolProperty(
+        name = 'internal',
+        default = False
+    )
+
     @classmethod
     def poll(cls, context):
         return True
@@ -189,6 +200,11 @@ class DisableInRenders(bpy.types.Operator):
     bl_description = "Disable in render."
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
 
+    internal : BoolProperty(
+        name = 'internal',
+        default = False
+    )
+
     @classmethod
     def poll(cls, context):
         return True
@@ -215,6 +231,11 @@ class Hide(bpy.types.Operator):
     bl_label = "Hide - Hide"
     bl_description = "Hide the selection"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
+
+    internal : BoolProperty(
+        name = 'internal',
+        default = False
+    )
 
     @classmethod
     def poll(cls, context):

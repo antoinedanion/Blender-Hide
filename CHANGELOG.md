@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2024-11-20
+
+### Added
+
+- Hotkeys are now available in addon preferences
+- Upgraded the addon to the extension system
+
+### Fixed
+
+- Addon Keymaps are no longer deleted
+
 ## [1.1.1] - 2024-11-12
 
 ### Fixed

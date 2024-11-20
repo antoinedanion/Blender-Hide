@@ -24,9 +24,9 @@ def register():
     for mod in modules:
         try:
             mod.register()
-            print(f'{str(mod)} registered successfully.')
+            print(f'{mod.__name__} registered successfully.')
         except:
-            print(f'Failed to register module : {str(mod)}')
+            print(f'Failed to register module : {mod.__name__}')
 
     preferences.load_preferences_from_file()
 
@@ -39,9 +39,9 @@ def unregister():
     for mod in reversed(modules):
         try:
             mod.unregister()
-            print(f'{str(mod)} unregistered successfully.')
+            print(f'{mod.__name__} unregistered successfully.')
         except:
-            print(f'Failed to unregister module : {str(mod)}')
+            print(f'Failed to unregister module : {mod.__name__}')
 
 if __name__ == "__main__":
     register()
