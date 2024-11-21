@@ -99,7 +99,7 @@ def add_default_keymaps():
     for kmi_parms in DEFAULT_KMI_LIST:
         add_kmi(**kmi_parms)
 
-def remove_keymapitems():
+def remove_addon_keymapitems():
     for km, kmi in addon_keymaps:
         km_name = km.name
         kmi_idname = kmi.idname
@@ -112,7 +112,14 @@ def remove_keymapitems():
     addon_keymaps.clear()
 
 def reset_addon_keymapitems():
-    remove_keymapitems()
+    user_keymapitems = get_user_keymapitems(internal_only = True)
+    if user_keymapitems:
+        wm = bpy.context.window_manager
+        user_kc = wm.keyconfigs.user
+        for km_name in user_keymapitems:
+            km: KeyMap = user_kc.keymaps[km_name]
+            for kmi in user_keymapitems[km_name]:
+                km.restore_item_to_default(kmi)
     add_default_keymaps()
 
 class ResetKeymaps(bpy.types.Operator):
@@ -142,7 +149,7 @@ def register():
         register_class(cls)
 
 def unregister():
-    remove_keymapitems()
+    remove_addon_keymapitems()
 
     from bpy.utils import unregister_class
     for cls in reversed(classes):
