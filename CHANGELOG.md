@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2024-11-22
+
+### Fixed
+
+- Operators wont display any redo panel
+
 ## [1.2.1] - 2024-11-21
 
 ### Fixed
