@@ -119,7 +119,10 @@ def reset_addon_keymapitems():
         for km_name in user_keymapitems:
             km: KeyMap = user_kc.keymaps[km_name]
             for kmi in user_keymapitems[km_name]:
-                km.restore_item_to_default(kmi)
+                if kmi.is_user_modified:
+                    km.restore_item_to_default(kmi)
+                else:
+                    remove_addon_keymapitems()
     add_default_keymaps()
 
 class ResetKeymaps(bpy.types.Operator):
