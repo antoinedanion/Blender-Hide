@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Operators wont display any redo panel
-- Reset Keymaps operator will now work correctly
+- Reset Keymaps operator will now work better but known issues still persists
 - KeyMapItems active state is now being saved across sessions
 
 ## [1.2.1] - 2024-11-21
