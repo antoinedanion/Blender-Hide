@@ -32,13 +32,11 @@ Select your objects either in the 3D view or in the outliner, then press H.
 ## Compatibility
 
 **Blender Versions**
-- 4.2
+- 4.2 to latest
 
 > [!NOTE]
 >
-> Hide should work on any OS, however this has not been tested yet and is not officially supported.  
-> 
-> Hide should work in some previous versions of Blender, however this has not been tested yet and is not officially supported.
+> Hide should work on any OS, however this has not been tested yet and is not officially supported.
 
 ## Issues
 
