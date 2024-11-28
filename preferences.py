@@ -13,13 +13,15 @@ import rna_keymap_ui
 
 from .constants import (PREFS_FILEPATH,
                          PREFS_DIR,
-                         ADDON_NAME
+                         ADDON_NAME,
                         )
 
 from .keymap import (get_user_keymapitems,
                      get_user_keymapitem_parms,
                      add_kmi,
                      add_default_keymaps,
+                     get_default_kmi_def_from_id,
+                     get_default_keymapitems,
 )
 
 def get_addon_prefs():
@@ -45,7 +47,11 @@ def get_addon_prefs():
             km = user_kc.keymaps[km_name]
             km_kmis = []
             for kmi in user_keymapitems[km_name]:
-                km_kmis.append(get_user_keymapitem_parms(km, kmi))
+                kmi_def = {
+                    'id' : kmi.properties.internal_id,
+                    'parms' : get_user_keymapitem_parms(km, kmi),
+                }
+                km_kmis.append(kmi_def)
             prefs_values['keymaps'][km.name] = km_kmis
 
     return prefs_values
@@ -60,10 +66,8 @@ def set_addon_prefs(prefs_values):
     # Keymaps
     if prefs_values['keymaps']:
         for km_name in prefs_values['keymaps']:
-            for kmi_parms in prefs_values['keymaps'][km_name]:
-                add_kmi(**kmi_parms)
-    else:
-        add_default_keymaps()
+            for kmi_def in prefs_values['keymaps'][km_name]:
+                add_kmi(kmi_def['id'], **kmi_def['parms'])
 
 def export_preferences_to_file():
     prefs_values = get_addon_prefs()
@@ -128,19 +132,31 @@ class HidePreferences(AddonPreferences):
 
         hotkeys_title_row = hotkeys_col.row()
         hotkeys_title_row.label(text="Hotkeys:")
-        hotkeys_title_row.operator("hide.resetkeymaps", text='Reset Keymaps')
 
         hotkeys_col.separator()
 
         wm = bpy.context.window_manager
-        kc = wm.keyconfigs.user
+        user_kc = wm.keyconfigs.user
         user_keymaps = get_user_keymapitems()
-        for km_name in user_keymaps:
+        default_keymaps = get_default_keymapitems()
+        keymaps = []
+        for km_name in list(user_keymaps.keys()) + list(default_keymaps.keys()):
+            if km_name not in keymaps:
+                keymaps.append(km_name)
+
+        for km_name in keymaps:
             hotkeys_col.label(text=f"•   {km_name}")
-            km: KeyMap = kc.keymaps[km_name]
-            for kmi in user_keymaps[km_name]:
-                hotkeys_col.context_pointer_set("keymap", km)
-                rna_keymap_ui.draw_kmi([], kc, km, kmi, hotkeys_col, 0)
+            km: KeyMap = user_kc.keymaps[km_name]
+            if km_name in user_keymaps:
+                for kmi in user_keymaps[km_name]:
+                    hotkeys_col.context_pointer_set("keymap", km)
+                    rna_keymap_ui.draw_kmi([], user_kc, km, kmi, hotkeys_col, 0)
+            if km_name in default_keymaps:
+                for kmi_id in default_keymaps[km_name]:
+                    if get_user_keymapitems(internal_id=kmi_id) == {}:
+                        kmi_def = get_default_kmi_def_from_id(kmi_id)
+                        kmi_op_idname = kmi_def['parms']['kmi_op_idname']
+                        hotkeys_col.operator("hide.adddefaultkeymapitem", text=f'Restore default hotkey for {kmi_op_idname}').internal_id = kmi_id
 
 classes = (HidePreferences,
 )

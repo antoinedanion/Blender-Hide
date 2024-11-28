@@ -35,19 +35,25 @@ KEYMAPITEM_TEMPLATE = {
 }
 
 KEYMAPITEM_HIDE_OBJECTMODE = {
-    'km_name' : 'Object Mode',
-    'kmi_op_idname' : 'hide.hide',
-    'kmi_type' : 'H',
-    'kmi_value' : 'PRESS',
-    'km_space_type' : 'EMPTY',
+    'id' : 1,
+    'parms' : {
+        'km_name' : 'Object Mode',
+        'kmi_op_idname' : 'hide.hide',
+        'kmi_type' : 'H',
+        'kmi_value' : 'PRESS',
+        'km_space_type' : 'EMPTY',
+    },
 }
 
 KEYMAPITEM_HIDE_OUTLINER = {
-    'km_name' : 'Outliner',
-    'kmi_op_idname' : 'hide.hide',
-    'kmi_type' : 'H',
-    'kmi_value' : 'PRESS',
-    'km_space_type' : 'OUTLINER',
+    'id' : 2,
+    'parms' : {
+        'km_name' : 'Outliner',
+        'kmi_op_idname' : 'hide.hide',
+        'kmi_type' : 'H',
+        'kmi_value' : 'PRESS',
+        'km_space_type' : 'OUTLINER',
+    },
 }
 
 DEFAULT_KMI_LIST = (KEYMAPITEM_HIDE_OBJECTMODE,

@@ -8,7 +8,7 @@ from typing import Any, Iterable
 
 import bpy
 from bpy.types import ID, Object, Collection, LayerCollection
-from bpy.props import BoolProperty
+from bpy.props import IntProperty
 
 from .constants import (ADDON_NAME,
                         OP_IDNAME_PREFIX,
@@ -125,11 +125,10 @@ class HideInViewport(bpy.types.Operator):
     bl_idname = OP_IDNAME_PREFIX + "." + "hideinviewport"
     bl_label = "Hide - Hide in viewport"
     bl_description = "Temporarily hide in viewport."
-    bl_options = {"REGISTER", "UNDO", "INTERNAL"}
+    bl_options = {"UNDO", "INTERNAL"}
 
-    internal : BoolProperty(
-        name = 'internal',
-        default = False,
+    internal_id : IntProperty(
+        name = 'internal_id',
         options = {"HIDDEN"}
     )
 
@@ -167,11 +166,10 @@ class DisableInViewports(bpy.types.Operator):
     bl_idname = OP_IDNAME_PREFIX + "." + "disableinviewports"
     bl_label = "Hide - Disable in viewport"
     bl_description = "Disable in viewport."
-    bl_options = {"REGISTER", "UNDO", "INTERNAL"}
+    bl_options = {"UNDO", "INTERNAL"}
 
-    internal : BoolProperty(
-        name = 'internal',
-        default = False,
+    internal_id : IntProperty(
+        name = 'internal_id',
         options = {"HIDDEN"}
     )
 
@@ -200,11 +198,10 @@ class DisableInRenders(bpy.types.Operator):
     bl_idname = OP_IDNAME_PREFIX + "." + "disableinrenders"
     bl_label = "Hide - Disable in render"
     bl_description = "Disable in render."
-    bl_options = {"REGISTER", "UNDO", "INTERNAL"}
+    bl_options = {"UNDO", "INTERNAL"}
 
-    internal : BoolProperty(
-        name = 'internal',
-        default = False,
+    internal_id : IntProperty(
+        name = 'internal_id',
         options = {"HIDDEN"}
     )
 
@@ -233,11 +230,10 @@ class Hide(bpy.types.Operator):
     bl_idname = OP_IDNAME_PREFIX + "." + "hide"
     bl_label = "Hide - Hide"
     bl_description = "Hide the selection"
-    bl_options = {"REGISTER", "UNDO", "INTERNAL"}
+    bl_options = {"UNDO", "INTERNAL"}
 
-    internal : BoolProperty(
-        name = 'internal',
-        default = False,
+    internal_id : IntProperty(
+        name = 'internal_id',
         options = {"HIDDEN"}
     )
 
