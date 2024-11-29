@@ -22,27 +22,79 @@ def get_sel() -> dict[str, ID]:
 
     sel_objects = {}
 
+    # Get context_outliner
     if bpy.context.area.type != 'OUTLINER':
-        override_context = {}
-        area = [area for area in bpy.context.screen.areas if area.type == "OUTLINER"][0]
-        override_context['area'] = area
-        override_context['region'] = area.regions[-1]
+        try:
+            context_outliner = {}
+            area = [area for area in bpy.context.screen.areas if area.type == "OUTLINER"][0]
+            context_outliner['area'] = area
+            context_outliner['region'] = area.regions[-1]
+        except:
+            context_outliner = None
+            print('No Outliner found')
+    else:
+        context_outliner = {}
+        context_outliner['area'] = bpy.context.area
+        context_outliner['region'] = bpy.context.region
     
-        with bpy.context.temp_override(**override_context):
-            sync: bool = bpy.context.area.spaces[0].use_sync_select
+    # Get context_viewport
+    if bpy.context.area.type != 'VIEW_3D':
+        try:
+            context_viewport = {}
+            area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
+            context_viewport['area'] = area
+            context_viewport['region'] = area.regions[-1]
+        except:
+            context_viewport = None
+            print('No Viewport found')
+    else:
+        context_viewport = {}
+        context_viewport['area'] = bpy.context.area
+        context_viewport['region'] = bpy.context.region
+
+    # Get sync
+    if context_outliner != None:
+        with bpy.context.temp_override(**context_outliner):
+            sync: bool | None = bpy.context.area.spaces[0].use_sync_select
+    else:
+        sync: bool | None = None
+
+    # Get selected ids
+    if bpy.context.area.type == 'OUTLINER' or bpy.context.area.type == 'VIEW_3D':
         if sync == True:
-            with bpy.context.temp_override(**override_context):
-                sel: Iterable[ID] = bpy.context.selected_ids
-        else:
+            sel_outliner: Iterable[ID] = []
+            sel_viewport: Iterable[ID] = []
+
+            if context_outliner != None:
+                with bpy.context.temp_override(**context_outliner):
+                    sel_outliner: Iterable[ID] = bpy.context.selected_ids
+            if context_viewport != None:
+                with bpy.context.temp_override(**context_viewport):
+                    sel_viewport: Iterable[ID] = bpy.context.selected_ids
+
+            sel = set(sel_outliner + sel_viewport)
+    elif bpy.context.area.type == 'OUTLINER':
+        with bpy.context.temp_override(**context_outliner):
+            sel: Iterable[ID] = bpy.context.selected_ids
+    elif bpy.context.area.type == 'VIEW_3D':
+        with bpy.context.temp_override(**context_viewport):
             sel: Iterable[ID] = bpy.context.selected_ids
     else:
-        sel: Iterable[ID] = bpy.context.selected_ids
+        print('Neither Outliner nor Viewport was found')
+    
+    # Remove any duplicate
+    sel = set(sel)
 
+    # Sort sel per types
     for id in sel:
         if id.bl_rna.identifier == 'Collection':
             sel_objects.setdefault('Collections', []).append(id)
         elif id.bl_rna.identifier == 'Object':
             sel_objects.setdefault('Objects', []).append(id)
+    
+    # Debug
+    if sel_objects == {}:
+        print('WARNING : Selection is empty')
 
     return sel_objects
 
