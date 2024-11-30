@@ -242,6 +242,7 @@ class HideInViewport(bpy.types.Operator):
             if global_state == None or global_state == False:
                 for obj in sel_objects:
                     obj.hide_set(True)
+                    obj.select_set(False)
             else:
                 for obj in sel_objects:
                     obj.hide_set(False)
@@ -284,6 +285,8 @@ class DisableInViewports(bpy.types.Operator):
             if global_state == None or global_state == False:
                 for id in ids:
                     id.hide_viewport = True
+                    if id.bl_rna.identifier == 'Object':
+                        id.select_set(False)
             else:
                 for id in ids:
                     id.hide_viewport = False
