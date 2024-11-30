@@ -11,10 +11,12 @@ from bpy.types import AddonPreferences, KeyMap, KeyMapItem
 from bpy.props import EnumProperty
 import rna_keymap_ui
 
-from .constants import (PREFS_FILEPATH,
-                         PREFS_DIR,
-                         ADDON_NAME,
-                        )
+from .constants import (
+    PREFS_FILEPATH,
+    PREFS_DIR,
+    ADDON_NAME,
+    OP_IDNAME_PREFIX,
+)
 
 from .keymap import (get_user_keymapitems,
                      get_user_keymapitem_parms,
@@ -56,7 +58,7 @@ def get_addon_prefs():
 
     return prefs_values
 
-def set_addon_prefs(prefs_values):
+def set_addon_prefs(prefs_values, preferences: bool = True, keymaps: bool = True):
     # Preferences
     preferences = bpy.context.preferences.addons[ADDON_NAME].preferences
     for key in preferences.__annotations__.keys():
@@ -83,26 +85,47 @@ def export_preferences_to_file():
 
         print(f'Preferences successfully saved to "{PREFS_FILEPATH}"')
 
-def load_preferences_from_file():
+def load_preferences_from_file(preferences: bool = True, keymaps: bool = True):
     try:
         with open(PREFS_FILEPATH, 'r') as file:
             prefs_values = json.load(file)
 
-            set_addon_prefs(prefs_values)
+            set_addon_prefs(prefs_values, preferences=preferences, keymaps=keymaps)
 
         print(f'Preferences successfully loaded from "{PREFS_FILEPATH}"')
 
     except FileNotFoundError:
         print(f'Failed to find preferences file, a new one will be created.')
-
-        add_default_keymaps()
+        if keymaps == True:
+            add_default_keymaps()
 
     except:
         print(f'Failed to load preferences')
+        if keymaps == True:
+            add_default_keymaps()
 
-        add_default_keymaps()
+def reset_preferences():
+    # Preferences
+    preferences: AddonPreferences = bpy.context.preferences.addons[ADDON_NAME].preferences
+    for key in preferences.__annotations__.keys():
+        preferences.property_unset(key)
 
+class ResetPreferences(bpy.types.Operator):
+    bl_idname = OP_IDNAME_PREFIX + "." + "resetpreferences"
+    bl_label = "Hide - Reset preferences"
+    bl_description = "Reset the preferences"
+    bl_options = {"INTERNAL"}
 
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+        print('Hide - ResetPreferences - execute')
+
+        reset_preferences()
+
+        return {"FINISHED"}
 
 class HidePreferences(AddonPreferences):
     # this must match the add-on name, use '__package__'
@@ -157,8 +180,13 @@ class HidePreferences(AddonPreferences):
                         kmi_def = get_default_kmi_def_from_id(kmi_id)
                         kmi_op_idname = kmi_def['parms']['kmi_op_idname']
                         hotkeys_col.operator("hide.adddefaultkeymapitem", text=f'Restore default hotkey for {kmi_op_idname}').internal_id = kmi_id
+        
+        layout.separator()
+        layout.operator("hide.resetpreferences", text=f'Reset preferences')
 
-classes = (HidePreferences,
+classes = (
+    ResetPreferences,
+    HidePreferences,
 )
 
 def register():
