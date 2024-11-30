@@ -72,10 +72,6 @@ def get_sel() -> dict[str, ID]:
                 sync: bool = bpy.context.area.spaces[0].use_sync_select
             context_outliner['sync'] = sync
 
-    # Debug
-    print(f'context_outliners : {context_outliners}')
-    print(f'context_viewports : {context_viewports}')
-
     # Get selected ids
     sel_outliners: Iterable[ID] = []
     sel_viewports: Iterable[ID] = []
