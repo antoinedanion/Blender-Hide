@@ -141,7 +141,7 @@ class HidePreferences(AddonPreferences):
         ],
         description = 'The method that will be used to hide objects and collections',
         default='HIDEINVIEWPORT',
-    )
+    ) # type: ignore
 
     def draw(self, context):
         layout = self.layout

@@ -15,13 +15,13 @@ class IDItem(bpy.types.PropertyGroup):
     id : PointerProperty(
         type = ID,
         name = 'ID'
-    )
+    ) # type: ignore
 
 class HideProperties(bpy.types.PropertyGroup):
     previous_sel : CollectionProperty(
         type = IDItem,
         name = 'Previous selection'
-    )
+    ) # type: ignore
 
 def init_addon_props():
     try:

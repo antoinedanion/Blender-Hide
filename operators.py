@@ -213,7 +213,7 @@ class HideInViewport(bpy.types.Operator):
     internal_id : IntProperty(
         name = 'internal_id',
         options = {"HIDDEN"}
-    )
+    ) # type: ignore
 
     @classmethod
     def poll(cls, context):
@@ -267,7 +267,7 @@ class DisableInViewports(bpy.types.Operator):
     internal_id : IntProperty(
         name = 'internal_id',
         options = {"HIDDEN"}
-    )
+    ) # type: ignore
 
     @classmethod
     def poll(cls, context):
@@ -312,7 +312,7 @@ class DisableInRenders(bpy.types.Operator):
     internal_id : IntProperty(
         name = 'internal_id',
         options = {"HIDDEN"}
-    )
+    ) # type: ignore
 
     @classmethod
     def poll(cls, context):
@@ -355,7 +355,7 @@ class Hide(bpy.types.Operator):
     internal_id : IntProperty(
         name = 'internal_id',
         options = {"HIDDEN"}
-    )
+    ) # type: ignore
 
     @classmethod
     def poll(cls, context):

@@ -173,7 +173,7 @@ class AddDefaultKeymapitem(bpy.types.Operator):
     internal_id : IntProperty(
         name='internal_id',
         options = {"HIDDEN"}
-    )
+    ) # type: ignore
 
     @classmethod
     def poll(cls, context):

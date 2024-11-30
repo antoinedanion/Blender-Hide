@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a reset preferences operator
+- Previous selection is now remembered and used when no selection
+
+### Fixed
+
+- Selection is now taking into account all outliners and viewports
+- Changed default hide method
+
 ## [1.2.3] - 2024-11-28
 
 ### Fixed
