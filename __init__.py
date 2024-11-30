@@ -4,14 +4,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://github.com/antoinedanion/Blender-Hide/blob/main/NOTICE>.
 
-from . import (preferences,
-               operators,
-               keymap,
-              )
+from . import (
+    properties,
+    operators,
+    preferences,
+    keymap,
+)
 
 classes = ()
 
 modules = (
+    properties,
     operators,
     preferences,
     keymap,

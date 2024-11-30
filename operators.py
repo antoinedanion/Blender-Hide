@@ -13,14 +13,15 @@ from bpy.props import IntProperty
 from .constants import (ADDON_NAME,
                         OP_IDNAME_PREFIX,
                        )
+from .properties import init_addon_props
 
-def get_sel() -> dict[str, ID]:
+def get_sel_ids() -> tuple[ID]:
     # Docs used
     # https://blender.stackexchange.com/questions/203729/python-get-selected-objects-in-outliner Check bl_rna.identifier
     # https://blender.stackexchange.com/questions/325004/how-can-i-get-the-currently-selected-objects-in-the-outliner-if-they-are-hidden Override the context
     # https://blender.stackexchange.com/questions/326453/cant-get-proper-context-selected-ids-from-3d-view DO NOT copy the entire context
 
-    sel_objects = {}
+    sel_ids = []
 
     # Get context_outliners
     context_outliners: list[dict[str, Any]] | None = []
@@ -59,7 +60,7 @@ def get_sel() -> dict[str, ID]:
     # Debug
     if context_outliners == None and context_viewports == None:
         print('Neither Outliner nor Viewport was found')
-        return sel_objects
+        return tuple(sel_ids)
 
     # Get sync states
     if context_outliners != None:
@@ -98,57 +99,76 @@ def get_sel() -> dict[str, ID]:
                 sel_viewports.extend(bpy.context.selected_ids)
     
     # Remove any duplicate
-    sel = set(sel_outliners + sel_viewports)
+    sel_ids = set(sel_outliners + sel_viewports)
 
-    # Sort sel per types
-    for id in sel:
-        sel_objects.setdefault(id.bl_rna.identifier, []).append(id)
-    
     # Debug
-    if sel_objects == {}:
+    if sel_ids == []:
         print('WARNING : Selection is empty')
-    
-    return sel_objects
 
-def get_sel_collections() -> tuple[Collection]:
+    return tuple(sel_ids)
+
+def sort_ids_per_type(ids : Iterable[ID]):
+    # Sort ids per types
+    sorted_ids = {}
+    for id in ids:
+        sorted_ids.setdefault(id.bl_rna.identifier, []).append(id)
+    return sorted_ids
+
+def get_sorted_sel() -> dict[str, ID]:    
+    return sort_ids_per_type(get_sel_ids())
+
+def get_sel_collections(sel : Iterable[ID] | None = None) -> tuple[Collection] | None:
     ids = []
-    sel = get_sel()
+
+    if sel == None:
+        sorted_sel = get_sorted_sel()
+    else:
+        sel = set(sel)
+        sorted_sel = sort_ids_per_type(sel)
+
     try:
-        ids = sel['Collection']
+        ids = sorted_sel['Collection']
     except:
         pass
 
     return tuple(ids)
 
-def get_sel_layer_collections() -> tuple[LayerCollection]:
+def get_sel_layer_collections(sel : Iterable[ID] | None = None) -> tuple[LayerCollection]:
     layer_collections = []
     for layer_collection in bpy.context.view_layer.layer_collection.children:
-        if layer_collection.collection in get_sel_collections():
+        if layer_collection.collection in get_sel_collections(sel):
             layer_collections.append(layer_collection)
 
     return tuple(layer_collections)
 
-def get_sel_objects() -> tuple[Object]:
+def get_sel_objects(sel : Iterable[ID] | None = None) -> tuple[Object]:
     ids = []
-    sel = get_sel()
+
+    if sel == None:
+        sorted_sel = get_sorted_sel()
+    else:
+        sel = set(sel)
+        sorted_sel = sort_ids_per_type(sel)
+
     try:
-        ids = sel['Object']
+        ids = sorted_sel['Object']
     except:
         pass
+
     return tuple(ids)
 
-def get_sel_global_state_hide_viewport() -> bool | None:
+def get_sel_global_state_hide_viewport(sel : Iterable[ID] | None = None) -> bool | None:
     # https://blender.stackexchange.com/questions/155563/how-to-hide-a-collection-in-viewport-but-not-disable-in-viewport-via-script
     global_state = None
 
-    sel_layer_collections: tuple[LayerCollection] = get_sel_layer_collections()
+    sel_layer_collections: tuple[LayerCollection] = get_sel_layer_collections(sel)
     if len(sel_layer_collections) > 0:
         layer_collections_global_state = sel_layer_collections[0].hide_viewport
         for layer_collection in sel_layer_collections[1:]:
             if layer_collections_global_state != layer_collection.hide_viewport:
                 layer_collections_global_state = None
     
-    sel_objects: list[Object] = get_sel_objects()
+    sel_objects: list[Object] = get_sel_objects(sel)
     if len(sel_objects) > 0:
         objects_global_state = sel_objects[0].hide_get()
         for id in sel_objects[1:]:
@@ -167,8 +187,8 @@ def get_sel_global_state_hide_viewport() -> bool | None:
 
     return global_state
 
-def get_sel_global_state_disable_viewport() -> bool | None:
-    ids: list[Object, Collection] = get_sel_collections() + get_sel_objects()
+def get_sel_global_state_disable_viewport(sel : Iterable[ID] | None = None) -> bool | None:
+    ids: list[Object, Collection] = get_sel_collections(sel) + get_sel_objects(sel)
     global_state = ids[0].hide_viewport
     for id in ids[1:]:
         if global_state != id.hide_viewport:
@@ -176,8 +196,8 @@ def get_sel_global_state_disable_viewport() -> bool | None:
 
     return global_state
 
-def get_sel_global_state_disable_render() -> bool | None:
-    ids: list[Object, Collection] = get_sel_collections() + get_sel_objects()
+def get_sel_global_state_disable_render(sel : Iterable[ID] | None = None) -> bool | None:
+    ids: list[Object, Collection] = get_sel_collections(sel) + get_sel_objects(sel)
     global_state = ids[0].hide_render
     for id in ids[1:]:
         if global_state != id.hide_render:
@@ -203,9 +223,13 @@ class HideInViewport(bpy.types.Operator):
     def execute(self, context):
         print('Hide - HideInViewport - execute')
 
-        global_state = get_sel_global_state_hide_viewport()
+        ids: list[Object, Collection] = get_sel_collections() + get_sel_objects()
+        if len(ids) == 0:
+            ids = [item.id for item in bpy.context.scene.hide.previous_sel]
 
-        sel_layer_collections: tuple[LayerCollection] = get_sel_layer_collections()
+        global_state = get_sel_global_state_hide_viewport(ids)
+
+        sel_layer_collections: tuple[LayerCollection] = get_sel_layer_collections(ids)
         if len(sel_layer_collections) > 0:
             if global_state == None or global_state == False:
                 for layer_collection in sel_layer_collections:
@@ -214,7 +238,7 @@ class HideInViewport(bpy.types.Operator):
                 for layer_collection in sel_layer_collections:
                     layer_collection.hide_viewport = False
 
-        sel_objects: list[Object] = get_sel_objects()
+        sel_objects = get_sel_objects(ids)
         if len(sel_objects) > 0:
             if global_state == None or global_state == False:
                 for obj in sel_objects:
@@ -223,6 +247,14 @@ class HideInViewport(bpy.types.Operator):
                 for obj in sel_objects:
                     obj.hide_set(False)
                     obj.select_set(True)
+
+        try:
+            bpy.context.scene.hide.previous_sel.clear()
+        except:
+            pass
+        for id in ids:
+            previous_sel_new_item = bpy.context.scene.hide.previous_sel.add()
+            previous_sel_new_item.id = id
 
         return {"FINISHED"}
 
@@ -245,8 +277,11 @@ class DisableInViewports(bpy.types.Operator):
         print('Hide - DisableInViewports - execute')
 
         ids: list[Object, Collection] = get_sel_collections() + get_sel_objects()
+        if len(ids) == 0:
+            ids = [item.id for item in bpy.context.scene.hide.previous_sel]
+
         if len(ids) > 0:
-            global_state = get_sel_global_state_disable_viewport()
+            global_state = get_sel_global_state_disable_viewport(ids)
             if global_state == None or global_state == False:
                 for id in ids:
                     id.hide_viewport = True
@@ -255,6 +290,14 @@ class DisableInViewports(bpy.types.Operator):
                     id.hide_viewport = False
                     if id.bl_rna.identifier == 'Object':
                         id.select_set(True)
+
+            try:
+                bpy.context.scene.hide.previous_sel.clear()
+            except:
+                pass
+            for id in ids:
+                previous_sel_new_item = bpy.context.scene.hide.previous_sel.add()
+                previous_sel_new_item.id = id
 
         return {"FINISHED"}
 
@@ -277,8 +320,11 @@ class DisableInRenders(bpy.types.Operator):
         print('Hide - DisableInRenders - execute')
 
         ids: list[Object, Collection] = get_sel_collections() + get_sel_objects()
+        if len(ids) == 0:
+            ids = [item.id for item in bpy.context.scene.hide.previous_sel]
+
         if len(ids) > 0:
-            global_state = get_sel_global_state_disable_render()
+            global_state = get_sel_global_state_disable_render(ids)
             if global_state == None or global_state == False:
                 for id in ids:
                     id.hide_render = True
@@ -287,6 +333,14 @@ class DisableInRenders(bpy.types.Operator):
                     id.hide_render = False
                     if id.bl_rna.identifier == 'Object':
                         id.select_set(True)
+            
+            try:
+                bpy.context.scene.hide.previous_sel.clear()
+            except:
+                pass
+            for id in ids:
+                previous_sel_new_item = bpy.context.scene.hide.previous_sel.add()
+                previous_sel_new_item.id = id
 
         return {"FINISHED"}
 
