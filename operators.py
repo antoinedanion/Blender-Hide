@@ -22,87 +22,103 @@ def get_sel() -> dict[str, ID]:
 
     sel_objects = {}
 
-    # Get context_outliner
-    if bpy.context.area.type != 'OUTLINER':
-        try:
-            context_outliner = {}
-            area = [area for area in bpy.context.screen.areas if area.type == "OUTLINER"][0]
-            context_outliner['area'] = area
-            context_outliner['region'] = area.regions[-1]
-        except:
-            context_outliner = None
-            print('No Outliner found')
+    # Get context_outliners
+    context_outliners: list[dict[str, Any]] | None = []
+    outliner_areas = [area for area in bpy.context.screen.areas if area.type == "OUTLINER"]
+    if outliner_areas != []:
+        for area in outliner_areas:
+            context_outliners.append(
+                {
+                    'parms': {
+                        'area' : area,
+                        'region' : area.regions[-1],
+                    },
+                }
+            )
     else:
-        context_outliner = {}
-        context_outliner['area'] = bpy.context.area
-        context_outliner['region'] = bpy.context.region
+        context_outliners: list[dict[str, Any]] | None = None
+        print('No Outliner found')
     
-    # Get context_viewport
-    if bpy.context.area.type != 'VIEW_3D':
-        try:
-            context_viewport = {}
-            area = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"][0]
-            context_viewport['area'] = area
-            context_viewport['region'] = area.regions[-1]
-        except:
-            context_viewport = None
-            print('No Viewport found')
+    # Get context_viewports
+    context_viewports: list[dict[str, Any]] | None = []
+    viewport_areas = [area for area in bpy.context.screen.areas if area.type == "VIEW_3D"]
+    if viewport_areas != []:
+        for area in viewport_areas:
+            context_viewports.append(
+                {
+                    'parms': {
+                        'area' : area,
+                        'region' : area.regions[-1],
+                    },
+                }
+            )
     else:
-        context_viewport = {}
-        context_viewport['area'] = bpy.context.area
-        context_viewport['region'] = bpy.context.region
+        context_viewports: list[dict[str, Any]] | None = None
+        print('No Viewport found')
 
-    # Get sync
-    if context_outliner != None:
-        with bpy.context.temp_override(**context_outliner):
-            sync: bool | None = bpy.context.area.spaces[0].use_sync_select
-    else:
-        sync: bool | None = None
+    # Debug
+    if context_outliners == None and context_viewports == None:
+        print('Neither Outliner nor Viewport was found')
+        return sel_objects
+
+    # Get sync states
+    if context_outliners != None:
+        if bpy.context.area.type == 'OUTLINER':
+            current_sync: bool | None = bpy.context.area.spaces[0].use_sync_select
+        else:
+            current_sync: bool | None = None
+        for context_outliner in context_outliners:
+            with bpy.context.temp_override(**context_outliner['parms']):
+                sync: bool = bpy.context.area.spaces[0].use_sync_select
+            context_outliner['sync'] = sync
+
+    # Debug
+    print(f'context_outliners : {context_outliners}')
+    print(f'context_viewports : {context_viewports}')
 
     # Get selected ids
-    if bpy.context.area.type == 'OUTLINER' or bpy.context.area.type == 'VIEW_3D':
-        if sync == True:
-            sel_outliner: Iterable[ID] = []
-            sel_viewport: Iterable[ID] = []
-
-            if context_outliner != None:
-                with bpy.context.temp_override(**context_outliner):
-                    sel_outliner: Iterable[ID] = bpy.context.selected_ids
-            if context_viewport != None:
-                with bpy.context.temp_override(**context_viewport):
-                    sel_viewport: Iterable[ID] = bpy.context.selected_ids
-
-            sel = set(sel_outliner + sel_viewport)
-    elif bpy.context.area.type == 'OUTLINER':
-        with bpy.context.temp_override(**context_outliner):
-            sel: Iterable[ID] = bpy.context.selected_ids
+    sel_outliners: Iterable[ID] = []
+    sel_viewports: Iterable[ID] = []
+    if bpy.context.area.type == 'OUTLINER':
+        if current_sync == True:
+            for context_outliner in context_outliners:
+                if context_outliner['sync'] == True:
+                    with bpy.context.temp_override(**context_outliner['parms']):
+                        sel_outliners.extend(bpy.context.selected_ids)
+            if context_viewports != None:
+                for context_viewport in context_viewports:
+                    with bpy.context.temp_override(**context_viewport['parms']):
+                        sel_viewports.extend(bpy.context.selected_ids)
+        else:
+            sel_outliners.extend(bpy.context.selected_ids)
     elif bpy.context.area.type == 'VIEW_3D':
-        with bpy.context.temp_override(**context_viewport):
-            sel: Iterable[ID] = bpy.context.selected_ids
-    else:
-        print('Neither Outliner nor Viewport was found')
+        if context_outliners != None:
+            for context_outliner in context_outliners:
+                if context_outliner['sync'] == True:
+                    with bpy.context.temp_override(**context_outliner['parms']):
+                        sel_outliners.extend(bpy.context.selected_ids)
+        for context_viewport in context_viewports:
+            with bpy.context.temp_override(**context_viewport['parms']):
+                sel_viewports.extend(bpy.context.selected_ids)
     
     # Remove any duplicate
-    sel = set(sel)
+    sel = set(sel_outliners + sel_viewports)
 
     # Sort sel per types
     for id in sel:
-        if id.bl_rna.identifier == 'Collection':
-            sel_objects.setdefault('Collections', []).append(id)
-        elif id.bl_rna.identifier == 'Object':
-            sel_objects.setdefault('Objects', []).append(id)
+        sel_objects.setdefault(id.bl_rna.identifier, []).append(id)
     
     # Debug
     if sel_objects == {}:
         print('WARNING : Selection is empty')
-
+    
     return sel_objects
 
 def get_sel_collections() -> tuple[Collection]:
     ids = []
     sel = get_sel()
     try:
-        ids = sel['Collections']
+        ids = sel['Collection']
     except:
         pass
 
@@ -120,7 +136,7 @@ def get_sel_objects() -> tuple[Object]:
     ids = []
     sel = get_sel()
     try:
-        ids = sel['Objects']
+        ids = sel['Object']
     except:
         pass
     return tuple(ids)
@@ -189,7 +205,7 @@ class HideInViewport(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        print('Hide - HideViewport - execute')
+        print('Hide - HideInViewport - execute')
 
         global_state = get_sel_global_state_hide_viewport()
 
@@ -230,7 +246,7 @@ class DisableInViewports(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        print('Hide - DisableViewport - execute')
+        print('Hide - DisableInViewports - execute')
 
         ids: list[Object, Collection] = get_sel_collections() + get_sel_objects()
         if len(ids) > 0:
@@ -262,7 +278,7 @@ class DisableInRenders(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        print('Hide - DisableRender - execute')
+        print('Hide - DisableInRenders - execute')
 
         ids: list[Object, Collection] = get_sel_collections() + get_sel_objects()
         if len(ids) > 0:
