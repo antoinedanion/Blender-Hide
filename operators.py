@@ -13,7 +13,6 @@ from bpy.props import IntProperty
 from .constants import (ADDON_NAME,
                         OP_IDNAME_PREFIX,
                        )
-from .properties import init_addon_props
 
 def get_sel_ids() -> tuple[ID]:
     # Docs used

@@ -6,7 +6,10 @@
 
 import bpy
 from bpy.types import ID
-from bpy.props import IntProperty, EnumProperty, PointerProperty, CollectionProperty
+from bpy.props import (
+    PointerProperty,
+    CollectionProperty,
+)
 
 class IDItem(bpy.types.PropertyGroup):
     id : PointerProperty(

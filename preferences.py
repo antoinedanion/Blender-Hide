@@ -117,7 +117,7 @@ class HidePreferences(AddonPreferences):
             ('DISABLEINRENDERS', 'Disable in Renders', 'Globally disable in renders'),
         ],
         description = 'The method that will be used to hide objects and collections',
-        default='DISABLEINVIEWPORTS',
+        default='HIDEINVIEWPORT',
     )
 
     def draw(self, context):
