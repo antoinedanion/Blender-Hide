@@ -247,7 +247,7 @@ class HidePreferences(AddonPreferences):
                         hotkeys_col.operator("hide.adddefaultkeymapitem", text=f'Restore default hotkey for {kmi_op_idname}').internal_id = kmi_id
         
         layout.separator()
-        layout.operator("hide.resetpreferences", text=f'Reset preferences')
+        layout.operator("hide.resetpreferences", text=f'Reset addon preferences')
 
 classes = (
     ResetPreferences,
