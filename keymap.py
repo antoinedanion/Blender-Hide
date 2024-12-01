@@ -10,7 +10,6 @@ import bpy
 from bpy.types import (KeyMap,
                        KeyMapItem
                       )
-from bpy.props import IntProperty
 
 from .constants import (OP_IDNAME_PREFIX,
                         DEFAULT_KMI_LIST,
@@ -18,7 +17,7 @@ from .constants import (OP_IDNAME_PREFIX,
 
 addon_keymaps: list[tuple[KeyMap,KeyMapItem]] = []
 
-def get_user_keymapitems(internal_only = False, internal_id: int | None = None) -> dict[str, list[KeyMapItem]]:
+def get_user_kmis(internal_only = False, internal_id: int | None = None) -> dict[str, list[KeyMapItem]]:
     """
     Retrieve user keymap items based on internal ID and filtering criteria.
 
@@ -34,17 +33,6 @@ def get_user_keymapitems(internal_only = False, internal_id: int | None = None) 
     dict
         A dictionary where keys are keymap names, and values are lists of KeyMapItems.
     """
-
-    def _append_kmi(list: list[Any], km: KeyMap, kmi: KeyMapItem):
-        try:
-            if kmi in list[km.name]:
-                found = True
-            else :
-                found = False
-        except:
-            found = False
-        if found == False:
-            list.setdefault(km.name, []).append(kmi)
     
     user_keymaps: dict[str, list[KeyMapItem]] = {}
 
@@ -63,30 +51,35 @@ def get_user_keymapitems(internal_only = False, internal_id: int | None = None) 
                 if internal_id != None and internal_only == False:
                     try:
                         if kmi.properties.internal_id == internal_id:
-                            _append_kmi(user_keymaps, km, kmi)
+                            user_keymaps.setdefault(km.name, []).append(kmi)
                     except:
                         pass
 
                 elif internal_id != None and internal_only == True:
                     try:
                         if kmi.properties.internal_id == internal_id and kmi.properties.internal_id != 0:
-                            _append_kmi(user_keymaps, km, kmi)
+                            user_keymaps.setdefault(km.name, []).append(kmi)
                     except:
                         pass
 
                 elif internal_id == None and internal_only == False:
-                    _append_kmi(user_keymaps, km, kmi)
+                    user_keymaps.setdefault(km.name, []).append(kmi)
 
                 elif internal_id == None and internal_only == True:
                     try:
                         if kmi.properties.internal_id != 0:
-                            _append_kmi(user_keymaps, km, kmi)
+                            user_keymaps.setdefault(km.name, []).append(kmi)
                     except:
                         pass
+    
+    # Remove duplicates
+    if len(user_keymaps) > 0:
+        for km_name in user_keymaps:
+            user_keymaps[km_name] = set(user_keymaps[km_name])
 
     return user_keymaps
 
-def get_user_keymapitem_parms(km: KeyMap, kmi: KeyMapItem) -> dict[str, Any]:
+def get_user_kmi_parms(km: KeyMap, kmi: KeyMapItem) -> dict[str, Any]:
     """
     Retrieve parameters of a keymap item.
 
@@ -126,7 +119,7 @@ def get_user_keymapitem_parms(km: KeyMap, kmi: KeyMapItem) -> dict[str, Any]:
 
     return parms
 
-def get_default_keymapitems() -> dict[str, list[int]]:
+def get_default_kmis() -> dict[str, list[int]]:
     """
     Retrieve default keymap items internal IDs defined in the addon.
 
@@ -165,7 +158,7 @@ def get_default_kmi_def_from_id(id: int) -> dict[str, Any] | None:
 
     return result
 
-def create_kmi(km_name, kmi_op_idname, kmi_type, kmi_value, kmi_any, kmi_shift, kmi_ctrl, kmi_alt, kmi_oskey, kmi_key_modifier, kmi_direction, kmi_repeat, kmi_head, km_space_type, km_region_type, km_modal, km_tool) -> tuple[KeyMap, KeyMapItem] | None:
+def create_addon_kmi(km_name, kmi_op_idname, kmi_type, kmi_value, kmi_any, kmi_shift, kmi_ctrl, kmi_alt, kmi_oskey, kmi_key_modifier, kmi_direction, kmi_repeat, kmi_head, km_space_type, km_region_type, km_modal, km_tool) -> tuple[KeyMap, KeyMapItem] | None:
     """
     Create a new KeyMapItem in the addon key configuration.
 
@@ -222,7 +215,7 @@ def create_kmi(km_name, kmi_op_idname, kmi_type, kmi_value, kmi_any, kmi_shift, 
         print('WARNING : Blender Addon keyconfig was not found')
         return None
         
-def add_kmi(internal_id: int, km_name: str, kmi_op_idname: str, kmi_type, kmi_value, kmi_any=False, kmi_shift=0, kmi_ctrl=0, kmi_alt=0, kmi_oskey=0, kmi_key_modifier='NONE', kmi_direction='ANY', kmi_repeat=False, kmi_head=False, km_space_type='EMPTY', km_region_type:str='WINDOW', km_modal=False, km_tool=False, kmi_active: bool = True) -> None:
+def add_addon_kmi(internal_id: int, km_name: str, kmi_op_idname: str, kmi_type, kmi_value, kmi_any=False, kmi_shift=0, kmi_ctrl=0, kmi_alt=0, kmi_oskey=0, kmi_key_modifier='NONE', kmi_direction='ANY', kmi_repeat=False, kmi_head=False, km_space_type='EMPTY', km_region_type:str='WINDOW', km_modal=False, km_tool=False, kmi_active: bool = True) -> None:
     """
     Add a new KeyMapItem to the addon keymaps list.
 
@@ -272,7 +265,7 @@ def add_kmi(internal_id: int, km_name: str, kmi_op_idname: str, kmi_type, kmi_va
     None
     """
 
-    kmi_tuple = create_kmi(km_name, kmi_op_idname, kmi_type, kmi_value, kmi_any, kmi_shift, kmi_ctrl, kmi_alt, kmi_oskey, kmi_key_modifier, kmi_direction, kmi_repeat, kmi_head, km_space_type, km_region_type, km_modal, km_tool)
+    kmi_tuple = create_addon_kmi(km_name, kmi_op_idname, kmi_type, kmi_value, kmi_any, kmi_shift, kmi_ctrl, kmi_alt, kmi_oskey, kmi_key_modifier, kmi_direction, kmi_repeat, kmi_head, km_space_type, km_region_type, km_modal, km_tool)
     if kmi_tuple != None:
         kmi_tuple[1].properties.internal_id = internal_id
         kmi_tuple[1].active = kmi_active
@@ -282,6 +275,33 @@ def add_kmi(internal_id: int, km_name: str, kmi_op_idname: str, kmi_type, kmi_va
         print(f'KeyMapItem added : "Addon" - "{km_name}" - [{kmi_op_idname}] - "{kmi_type}"')
     else:
         print(f'WARNING : Failed to add KeyMapItem : "Addon" - "{km_name}" - [{kmi_op_idname}] - "{kmi_type}"')
+
+def remove_addon_kmi(internal_id: int) -> None:
+    """
+    Remove a KeyMapItem added by the addon from the keymaps.
+
+    Parameters
+    ----------
+    internal_id : int
+        The internal ID associated with the KeyMapItem.
+
+    Returns
+    -------
+    None
+    """
+
+    index = 0
+    for km, kmi in addon_keymaps:
+        if kmi.properties.internal_id == internal_id:
+            km_name = km.name
+            kmi_idname = kmi.idname
+            kmi_type = kmi.type
+
+            km.keymap_items.remove(kmi)
+            addon_keymaps.pop(index)
+
+            print(f'KeyMapItem removed : "Addon" - "{km_name}" - [{kmi_idname}] - "{kmi_type}"')
+        index = index + 1
 
 def add_default_keymaps(id_list: Iterable[int] | None = None) -> None:
     """
@@ -300,12 +320,12 @@ def add_default_keymaps(id_list: Iterable[int] | None = None) -> None:
     if id_list:
         for kmi_def in DEFAULT_KMI_LIST:
             if kmi_def['id'] in id_list:
-                add_kmi(kmi_def['id'], **kmi_def['parms'])
+                add_addon_kmi(kmi_def['id'], **kmi_def['parms'])
     else:
         for kmi_def in DEFAULT_KMI_LIST:
-            add_kmi(kmi_def['id'], **kmi_def['parms'])
+            add_addon_kmi(kmi_def['id'], **kmi_def['parms'])
 
-def remove_addon_keymapitems() -> None:
+def remove_addon_kmis() -> None:
     """
     Remove all KeyMapItems added by the addon from the keymaps.
 
@@ -339,7 +359,7 @@ def remove_user_keymapitems(internal_only=False) -> None:
     None
     """
 
-    user_keymapitems = get_user_keymapitems(internal_only=internal_only)
+    user_keymapitems = get_user_kmis(internal_only=internal_only)
 
     for km_name in user_keymapitems:
         wm = bpy.context.window_manager
@@ -353,35 +373,7 @@ def remove_user_keymapitems(internal_only=False) -> None:
 
             print(f'KeyMapItem removed : "User" - "{km_name}" - [{kmi_idname}] - "{kmi_type}"')
 
-class AddDefaultKeymapitem(bpy.types.Operator):
-    """
-    Operator for adding specific Keymapitem.
-    """
-
-    bl_idname = OP_IDNAME_PREFIX + "." + "adddefaultkeymapitem"
-    bl_label = "Hide - Add Default KeyMapItem"
-    bl_description = ""
-    bl_options = {"UNDO", "INTERNAL"}
-
-    internal_id : IntProperty(
-        name='internal_id',
-        options = {"HIDDEN"}
-    ) # type: ignore
-
-    @classmethod
-    def poll(cls, context):
-        return True
-
-    def execute(self, context):
-        print('Hide - Add Default KeyMapItem - execute')
-
-        add_default_keymaps(id_list=[self.internal_id,])
-
-        return {"FINISHED"}
-
-classes = (
-    AddDefaultKeymapitem,
-)
+classes = ()
 
 def register():
     from bpy.utils import register_class
@@ -389,7 +381,7 @@ def register():
         register_class(cls)
 
 def unregister():
-    remove_addon_keymapitems()
+    remove_addon_kmis()
 
     from bpy.utils import unregister_class
     for cls in reversed(classes):

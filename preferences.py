@@ -9,7 +9,10 @@ from typing import Any
 
 import bpy
 from bpy.types import AddonPreferences, KeyMap, KeyMapItem
-from bpy.props import EnumProperty
+from bpy.props import (
+    EnumProperty,
+    IntProperty,
+)
 import rna_keymap_ui
 
 from .constants import (
@@ -18,13 +21,13 @@ from .constants import (
     ADDON_NAME,
     OP_IDNAME_PREFIX,
 )
-
-from .keymap import (get_user_keymapitems,
-                     get_user_keymapitem_parms,
-                     add_kmi,
-                     add_default_keymaps,
-                     get_default_kmi_def_from_id,
-                     get_default_keymapitems,
+from .keymap import (
+    get_user_kmis,
+    get_user_kmi_parms,
+    add_addon_kmi,
+    add_default_keymaps,
+    get_default_kmi_def_from_id,
+    get_default_kmis,
 )
 
 def get_addon_prefs() -> dict[str, Any]:
@@ -51,7 +54,7 @@ def get_addon_prefs() -> dict[str, Any]:
             prefs_values['preferences'][key] = k
     
     # Keymaps
-    user_keymapitems = get_user_keymapitems(internal_only = True)
+    user_keymapitems = get_user_kmis(internal_only = True)
     if user_keymapitems:
         wm = bpy.context.window_manager
         user_kc = wm.keyconfigs.user
@@ -61,7 +64,7 @@ def get_addon_prefs() -> dict[str, Any]:
             for kmi in user_keymapitems[km_name]:
                 kmi_def = {
                     'id' : kmi.properties.internal_id,
-                    'parms' : get_user_keymapitem_parms(km, kmi),
+                    'parms' : get_user_kmi_parms(km, kmi),
                 }
                 km_kmis.append(kmi_def)
             prefs_values['keymaps'][km.name] = km_kmis
@@ -96,7 +99,7 @@ def set_addon_prefs(prefs_values, preferences: bool = True, keymaps: bool = True
     if prefs_values['keymaps']:
         for km_name in prefs_values['keymaps']:
             for kmi_def in prefs_values['keymaps'][km_name]:
-                add_kmi(kmi_def['id'], **kmi_def['parms'])
+                add_addon_kmi(kmi_def['id'], **kmi_def['parms'])
 
 def export_preferences_to_file() -> None:
     """
@@ -188,6 +191,32 @@ class ResetPreferences(bpy.types.Operator):
 
         return {"FINISHED"}
 
+class AddDefaultKeymapitem(bpy.types.Operator):
+    """
+    Operator for adding specific Keymapitem.
+    """
+
+    bl_idname = OP_IDNAME_PREFIX + "." + "adddefaultkeymapitem"
+    bl_label = "Hide - Add Default KeyMapItem"
+    bl_description = ""
+    bl_options = {"UNDO", "INTERNAL"}
+
+    internal_id : IntProperty(
+        name='internal_id',
+        options = {"HIDDEN"}
+    ) # type: ignore
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+        print('Hide - Add Default KeyMapItem - execute')
+
+        add_default_keymaps(id_list=[self.internal_id,])
+
+        return {"FINISHED"}
+
 class HidePreferences(AddonPreferences):
     """
     Preferences class for the "Hide" addon.
@@ -225,8 +254,8 @@ class HidePreferences(AddonPreferences):
 
         wm = bpy.context.window_manager
         user_kc = wm.keyconfigs.user
-        user_keymaps = get_user_keymapitems()
-        default_keymaps = get_default_keymapitems()
+        user_keymaps = get_user_kmis()
+        default_keymaps = get_default_kmis()
         keymaps = []
         for km_name in list(user_keymaps.keys()) + list(default_keymaps.keys()):
             if km_name not in keymaps:
@@ -241,16 +270,17 @@ class HidePreferences(AddonPreferences):
                     rna_keymap_ui.draw_kmi([], user_kc, km, kmi, hotkeys_col, 0)
             if km_name in default_keymaps:
                 for kmi_id in default_keymaps[km_name]:
-                    if get_user_keymapitems(internal_id=kmi_id) == {}:
+                    if get_user_kmis(internal_id=kmi_id) == {}:
                         kmi_def = get_default_kmi_def_from_id(kmi_id)
                         kmi_op_idname = kmi_def['parms']['kmi_op_idname']
                         hotkeys_col.operator("hide.adddefaultkeymapitem", text=f'Restore default hotkey for {kmi_op_idname}').internal_id = kmi_id
         
-        layout.separator()
-        layout.operator("hide.resetpreferences", text=f'Reset addon preferences')
+        # layout.separator()
+        # layout.operator("hide.resetpreferences", text=f'Reset addon preferences')
 
 classes = (
     ResetPreferences,
+    AddDefaultKeymapitem,
     HidePreferences,
 )
 
