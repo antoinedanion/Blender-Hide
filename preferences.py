@@ -5,6 +5,7 @@
 # along with this program.  If not, see <https://github.com/antoinedanion/Blender-Hide/blob/main/NOTICE>.
 
 import os, json
+from typing import Any
 
 import bpy
 from bpy.types import AddonPreferences, KeyMap, KeyMapItem
@@ -26,7 +27,16 @@ from .keymap import (get_user_keymapitems,
                      get_default_keymapitems,
 )
 
-def get_addon_prefs():
+def get_addon_prefs() -> dict[str, Any]:
+    """
+    Retrieves the current addon preferences and user-defined keymaps.
+
+    Returns
+    -------
+    dict[str, Any]
+        A dictionary containing addon preferences and keymaps.
+    """
+
     prefs_values = {'preferences': {},
                     'keymaps': {},
     }
@@ -58,7 +68,24 @@ def get_addon_prefs():
 
     return prefs_values
 
-def set_addon_prefs(prefs_values, preferences: bool = True, keymaps: bool = True):
+def set_addon_prefs(prefs_values, preferences: bool = True, keymaps: bool = True) -> None:
+    """
+    Sets addon preferences and user-defined keymaps from the provided values.
+
+    Parameters
+    ----------
+    prefs_values : dict
+        A dictionary containing preferences and keymap definitions.
+    preferences : bool, optional
+        If True, preferences will be set. Default is True.
+    keymaps : bool, optional
+        If True, keymaps will be set. Default is True.
+
+    Returns
+    -------
+    None
+    """
+
     # Preferences
     preferences = bpy.context.preferences.addons[ADDON_NAME].preferences
     for key in preferences.__annotations__.keys():
@@ -71,7 +98,15 @@ def set_addon_prefs(prefs_values, preferences: bool = True, keymaps: bool = True
             for kmi_def in prefs_values['keymaps'][km_name]:
                 add_kmi(kmi_def['id'], **kmi_def['parms'])
 
-def export_preferences_to_file():
+def export_preferences_to_file() -> None:
+    """
+    Exports the current addon preferences and user-defined keymaps to a file.
+
+    Returns
+    -------
+    None
+    """
+
     prefs_values = get_addon_prefs()
     
     if prefs_values:
@@ -85,7 +120,22 @@ def export_preferences_to_file():
 
         print(f'Preferences successfully saved to "{PREFS_FILEPATH}"')
 
-def load_preferences_from_file(preferences: bool = True, keymaps: bool = True):
+def load_preferences_from_file(preferences: bool = True, keymaps: bool = True) -> None:
+    """
+    Loads addon preferences and user-defined keymaps from a file.
+
+    Parameters
+    ----------
+    preferences : bool, optional
+        If True, preferences will be loaded. Default is True.
+    keymaps : bool, optional
+        If True, keymaps will be loaded. Default is True.
+
+    Returns
+    -------
+    None
+    """
+
     try:
         with open(PREFS_FILEPATH, 'r') as file:
             prefs_values = json.load(file)
@@ -104,13 +154,24 @@ def load_preferences_from_file(preferences: bool = True, keymaps: bool = True):
         if keymaps == True:
             add_default_keymaps()
 
-def reset_preferences():
-    # Preferences
+def reset_preferences() -> None:
+    """
+    Resets the addon preferences to their default values.
+
+    Returns
+    -------
+    None
+    """
+    
     preferences: AddonPreferences = bpy.context.preferences.addons[ADDON_NAME].preferences
     for key in preferences.__annotations__.keys():
         preferences.property_unset(key)
 
 class ResetPreferences(bpy.types.Operator):
+    """
+    Operator for resetting addon preferences.
+    """
+
     bl_idname = OP_IDNAME_PREFIX + "." + "resetpreferences"
     bl_label = "Hide - Reset preferences"
     bl_description = "Reset the preferences"
@@ -128,6 +189,10 @@ class ResetPreferences(bpy.types.Operator):
         return {"FINISHED"}
 
 class HidePreferences(AddonPreferences):
+    """
+    Preferences class for the "Hide" addon.
+    """
+
     # this must match the add-on name, use '__package__'
     # when defining this in a submodule of a python package.
     bl_idname = ADDON_NAME

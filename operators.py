@@ -15,6 +15,15 @@ from .constants import (ADDON_NAME,
                        )
 
 def get_sel_ids() -> tuple[ID]:
+    """
+    Retrieves the selected IDs from either the Outliners or the 3D Viewports.
+
+    Returns
+    -------
+    tuple[ID]
+        A tuple containing the selected Blender IDs.
+    """
+
     # Docs used
     # https://blender.stackexchange.com/questions/203729/python-get-selected-objects-in-outliner Check bl_rna.identifier
     # https://blender.stackexchange.com/questions/325004/how-can-i-get-the-currently-selected-objects-in-the-outliner-if-they-are-hidden Override the context
@@ -106,17 +115,54 @@ def get_sel_ids() -> tuple[ID]:
 
     return tuple(sel_ids)
 
-def sort_ids_per_type(ids : Iterable[ID]):
+def sort_ids_per_type(ids : Iterable[ID]) -> dict[str, list[ID]]:
+    """
+    Sorts a list of Blender IDs by their type.
+
+    Parameters
+    ----------
+    ids : Iterable[ID]
+        A list of Blender IDs to sort.
+
+    Returns
+    -------
+    dict[str, list[ID]]
+        A dictionary where keys are ID types and values are lists of IDs of that type.
+    """
+
     # Sort ids per types
     sorted_ids = {}
     for id in ids:
         sorted_ids.setdefault(id.bl_rna.identifier, []).append(id)
     return sorted_ids
 
-def get_sorted_sel() -> dict[str, ID]:    
+def get_sorted_sel() -> dict[str, ID]:
+    """
+    Retrieves and sorts the currently selected IDs by type.
+
+    Returns
+    -------
+    dict[str, ID]
+        A dictionary of sorted selected IDs, grouped by their type.
+    """
+
     return sort_ids_per_type(get_sel_ids())
 
-def get_sel_collections(sel : Iterable[ID] | None = None) -> tuple[Collection] | None:
+def get_sel_collections(sel : Iterable[ID] | None = None) -> tuple[Collection]:
+    """
+    Retrieves the selected collections.
+
+    Parameters
+    ----------
+    sel : Iterable[ID], optional
+        A list of IDs to filter for collections. If None, the currently selected IDs are used.
+
+    Returns
+    -------
+    tuple[Collection]
+        A tuple of selected collections.
+    """
+
     ids = []
 
     if sel == None:
@@ -133,6 +179,20 @@ def get_sel_collections(sel : Iterable[ID] | None = None) -> tuple[Collection] |
     return tuple(ids)
 
 def get_sel_layer_collections(sel : Iterable[ID] | None = None) -> tuple[LayerCollection]:
+    """
+    Retrieves the selected layer collections.
+
+    Parameters
+    ----------
+    sel : Iterable[ID], optional
+        A list of IDs to filter for layer collections. If None, the currently selected collections are used.
+
+    Returns
+    -------
+    tuple[LayerCollection]
+        A tuple of selected layer collections.
+    """
+
     layer_collections = []
     for layer_collection in bpy.context.view_layer.layer_collection.children:
         if layer_collection.collection in get_sel_collections(sel):
@@ -141,6 +201,20 @@ def get_sel_layer_collections(sel : Iterable[ID] | None = None) -> tuple[LayerCo
     return tuple(layer_collections)
 
 def get_sel_objects(sel : Iterable[ID] | None = None) -> tuple[Object]:
+    """
+    Retrieves the selected objects.
+
+    Parameters
+    ----------
+    sel : Iterable[ID], optional
+        A list of IDs to filter for objects. If None, the currently selected IDs are used.
+
+    Returns
+    -------
+    tuple[Object]
+        A tuple of selected objects.
+    """
+
     ids = []
 
     if sel == None:
@@ -157,6 +231,20 @@ def get_sel_objects(sel : Iterable[ID] | None = None) -> tuple[Object]:
     return tuple(ids)
 
 def get_sel_global_state_hide_viewport(sel : Iterable[ID] | None = None) -> bool | None:
+    """
+    Determines the global state of `hide_viewport` for the selected items.
+
+    Parameters
+    ----------
+    sel : Iterable[ID], optional
+        A list of IDs to check the hide state for. If None, the currently selected IDs are used.
+
+    Returns
+    -------
+    bool | None
+        The global hide state, or None if the states are mixed.
+    """
+
     # https://blender.stackexchange.com/questions/155563/how-to-hide-a-collection-in-viewport-but-not-disable-in-viewport-via-script
     global_state = None
 
@@ -187,6 +275,20 @@ def get_sel_global_state_hide_viewport(sel : Iterable[ID] | None = None) -> bool
     return global_state
 
 def get_sel_global_state_disable_viewport(sel : Iterable[ID] | None = None) -> bool | None:
+    """
+    Determines the global state of `disable_viewport` for the selected items.
+
+    Parameters
+    ----------
+    sel : Iterable[ID], optional
+        A list of IDs to check the disable state for. If None, the currently selected IDs are used.
+
+    Returns
+    -------
+    bool | None
+        The global disable state, or None if the states are mixed.
+    """
+
     ids: list[Object, Collection] = get_sel_collections(sel) + get_sel_objects(sel)
     global_state = ids[0].hide_viewport
     for id in ids[1:]:
@@ -196,6 +298,20 @@ def get_sel_global_state_disable_viewport(sel : Iterable[ID] | None = None) -> b
     return global_state
 
 def get_sel_global_state_disable_render(sel : Iterable[ID] | None = None) -> bool | None:
+    """
+    Determines the global state of `disable_render` for the selected items.
+
+    Parameters
+    ----------
+    sel : Iterable[ID], optional
+        A list of IDs to check the render disable state for. If None, the currently selected IDs are used.
+
+    Returns
+    -------
+    bool | None
+        The global render disable state, or None if the states are mixed.
+    """
+
     ids: list[Object, Collection] = get_sel_collections(sel) + get_sel_objects(sel)
     global_state = ids[0].hide_render
     for id in ids[1:]:
@@ -205,6 +321,10 @@ def get_sel_global_state_disable_render(sel : Iterable[ID] | None = None) -> boo
     return global_state
 
 class HideInViewport(bpy.types.Operator):
+    """
+    Operator for hiding selected items in the viewport.
+    """
+
     bl_idname = OP_IDNAME_PREFIX + "." + "hideinviewport"
     bl_label = "Hide - Hide in viewport"
     bl_description = "Temporarily hide in viewport."
@@ -259,6 +379,10 @@ class HideInViewport(bpy.types.Operator):
         return {"FINISHED"}
 
 class DisableInViewports(bpy.types.Operator):
+    """
+    Operator for disabling selected items in the viewport.
+    """
+
     bl_idname = OP_IDNAME_PREFIX + "." + "disableinviewports"
     bl_label = "Hide - Disable in viewport"
     bl_description = "Disable in viewport."
@@ -304,6 +428,10 @@ class DisableInViewports(bpy.types.Operator):
         return {"FINISHED"}
 
 class DisableInRenders(bpy.types.Operator):
+    """
+    Operator for disabling selected items in renders.
+    """
+
     bl_idname = OP_IDNAME_PREFIX + "." + "disableinrenders"
     bl_label = "Hide - Disable in render"
     bl_description = "Disable in render."
@@ -347,6 +475,10 @@ class DisableInRenders(bpy.types.Operator):
         return {"FINISHED"}
 
 class Hide(bpy.types.Operator):
+    """
+    Operator for hiding selected items using prefered hide method.
+    """
+
     bl_idname = OP_IDNAME_PREFIX + "." + "hide"
     bl_label = "Hide - Hide"
     bl_description = "Hide the selection"
