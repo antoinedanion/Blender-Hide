@@ -14,29 +14,27 @@ from bpy.props import (
 class IDItem(bpy.types.PropertyGroup):
     id : PointerProperty(
         type = ID,
-        name = 'ID'
+        name = 'id'
     ) # type: ignore
 
-class HideProperties(bpy.types.PropertyGroup):
+class HideSceneProperties(bpy.types.PropertyGroup):
     previous_sel : CollectionProperty(
         type = IDItem,
-        name = 'Previous selection'
+        name = 'previous_sel'
     ) # type: ignore
 
 def init_addon_props():
-    try:
-        props = bpy.types.Scene.hide
-        print('Hide properties was found attached to the scene')
-    except:
-        print('No Hide properties was found attached to the scene. Creating new ones')
-        bpy.types.Scene.hide = PointerProperty(
-            type = HideProperties,
-            name = 'Hide properties'
-        )
+    bpy.types.Scene.hide = PointerProperty(
+        type = HideSceneProperties,
+        name = 'hide'
+    )
+
+def del_addon_props():
+    del bpy.types.Scene.hide
 
 classes = (
     IDItem,
-    HideProperties,
+    HideSceneProperties,
 )
 
 def register():
@@ -47,6 +45,8 @@ def register():
     init_addon_props()
 
 def unregister():
+    del_addon_props()
+
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
